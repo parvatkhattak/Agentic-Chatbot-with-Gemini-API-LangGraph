@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Personal Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            opacity: 0.95;
+            font-size: 1.2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: linear-gradient(to bottom, #fafafa, #ffffff);
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            word-wrap: break-word;
+            line-height: 1.5;
+            animation: messageSlide 0.4s ease-out;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes messageSlide {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .user-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 8px;
+            transform-origin: right;
+        }
+
+        .user-message::before {
+            content: '';
+            position: absolute;
+            right: -8px;
+            bottom: 0;
+            width: 0;
+            height: 0;
+            border-left: 8px solid #764ba2;
+            border-top: 8px solid transparent;
+        }
+
+        .bot-message {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #2c3e50;
+            align-self: flex-start;
+            border-bottom-left-radius: 8px;
+            border-left: 4px solid #667eea;
+            transform-origin: left;
+        }
+
+        .bot-message::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            bottom: 0;
+            width: 0;
+            height: 0;
+            border-right: 8px solid #e9ecef;
+            border-top: 8px solid transparent;
+        }
+
+        .input-section {
+            display: flex;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-top: 1px solid #e0e0e0;
+            gap: 15px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .send-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .send-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            width: 350px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 25px;
+            border-left: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .todo-list {
+            list-style: none;
+            padding: 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .todo-item {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .todo-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+            border-left-color: #764ba2;
+        }
+
+        .todo-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .todo-item .delete-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .todo-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .todo-item .delete-btn:hover {
+            background: #c0392b;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px 20px;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .todo-counter {
+            background: #667eea;
+            color: white;
+            border-radius: 15px;
+            padding: 4px 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid #e0e0e0;
+                max-height: 300px;
+            }
+            
+            .container {
+                margin: 10px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .chat-messages {
+                padding: 15px;
+            }
+            
+            .input-section {
+                padding: 15px;
+            }
+            
+            .message {
+                max-width: 90%;
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Agentic Personal Assistant</h1>
+            <p>Your intelligent companion for conversations and task management</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="chat-section">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        Hello! I'm your personal assistant. I can help you with conversations and managing your to-do list. What would you like to do today?
+                    </div>
+                </div>
+                
+                <div class="input-section">
+                    <input type="text" id="messageInput" class="message-input" placeholder="Type your message..." maxlength="500">
+                    <button id="sendButton" class="send-button">Send</button>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <h3>📋 Your To-Do List <span class="todo-counter" id="todoCounter">0</span></h3>
+                <ul class="todo-list" id="todoList">
+                    <li class="empty-state">No tasks yet. Ask me to add some!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const todoList = document.getElementById('todoList');
+        const todoCounter = document.getElementById('todoCounter');
+
+        let isLoading = false;
+        let userData = null;
+
+        // Check if user has set their name on page load
+        async function checkUserProfile() {
+            try {
+                const response = await fetch('/api/profile');
+                const data = await response.json();
+                
+                if (!data.has_name) {
+                    // Redirect to welcome page if no name is set
+                    window.location.href = '/welcome';
+                    return;
+                }
+                
+                userData = data;
+                updateTodoCounter(data.todo_count);
+                
+                // Load conversation history
+                await loadConversationHistory();
+                
+            } catch (error) {
+                console.error('Error checking profile:', error);
+                showError('Failed to load profile. Please refresh the page.');
+            }
+        }
+
+        async function loadConversationHistory() {
+            try {
+                const response = await fetch('/api/conversation_history');
+                const data = await response.json();
+                
+                if (data.messages && data.messages.length > 0) {
+                    // Clear initial message
+                    chatMessages.innerHTML = '';
+                    
+                    // Add recent messages
+                    data.messages.forEach(message => {
+                        addMessage(message.content, message.role === 'user');
+                    });
+                } else {
+                    // Keep the initial welcome message
+                    addMessage(`Welcome back${userData.name ? ', ' + userData.name : ''}! How can I help you today?`);
+                }
+                
+            } catch (error) {
+                console.error('Error loading conversation history:', error);
+                // Keep initial message if history fails to load
+            }
+        }
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = content;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            chatMessages.appendChild(errorDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Auto-remove error after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function showLoading() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot-message loading';
+            loadingDiv.innerHTML = '<div class="spinner"></div> Thinking...';
+            loadingDiv.id = 'loadingMessage';
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideLoading() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+        }
+
+        function updateTodoCounter(count) {
+            todoCounter.textContent = count || 0;
+        }
+
+        async function updateTodoList() {
+            try {
+                const response = await fetch('/api/todos');
+                const data = await response.json();
+                
+                todoList.innerHTML = '';
+                
+                if (data.todos && data.todos.length > 0) {
+                    data.todos.forEach(todo => {
+                        const li = document.createElement('li');
+                        li.className = 'todo-item';
+                        li.innerHTML = `
+                            ${todo.task}
+                            <button class="delete-btn" onclick="deleteTodo(${todo.id})" title="Complete task">✓</button>
+                        `;
+                        todoList.appendChild(li);
+                    });
+                    updateTodoCounter(data.todos.length);
+                } else {
+                    const li = document.createElement('li');
+                    li.className = 'empty-state';
+                    li.textContent = 'No tasks yet. Ask me to add some!';
+                    todoList.appendChild(li);
+                    updateTodoCounter(0);
+                }
+                
+            } catch (error) {
+                console.error('Error fetching todos:', error);
+                showError('Failed to load to-do list');
+            }
+        }
+
+        async function deleteTodo(todoId) {
+            try {
+                const response = await fetch(`/api/todos/${todoId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addMessage(data.message);
+                    updateTodoList();
+                } else {
+                    showError(data.error || 'Failed to complete task');
+                }
+                
+            } catch (error) {
+                console.error('Error deleting todo:', error);
+                showError('Failed to complete task');
+            }
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || isLoading) return;
+
+            isLoading = true;
+            sendButton.disabled = true;
+            
+            addMessage(message, true);
+            messageInput.value = '';
+            showLoading();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                hideLoading();
+                
+                if (response.ok) {
+                    if (data.redirect_to_welcome) {
+                        // Redirect immediately if name change is requested
+                        window.location.href = '/welcome';
+                        return;
+                    }
+
+                    addMessage(data.response);
+                    updateTodoList(); // Refresh todo list after each message
+                } else {
+                    if (response.status === 400 && data.error.includes('name')) {
+                        // User needs to set name
+                        window.location.href = '/welcome';
+                        return;
+                    }
+                    showError(data.error || 'Sorry, I encountered an error');
+                }
+
+                
+            } catch (error) {
+                hideLoading();
+                showError('Sorry, I encountered a network error. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                isLoading = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            checkUserProfile();
+            messageInput.focus();
+        });
+
+        // Global function for todo deletion (called from inline onclick)
+        window.deleteTodo = deleteTodo;
+    </script>
+</body>
+</html>
